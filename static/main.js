@@ -28,6 +28,8 @@ const app = new Vue({
 		pauseAllMedia() {
 			const videos = document.querySelectorAll("video");
 			const audios = document.querySelectorAll("audio");
+
+			// Feature does not work.
 			videos.forEach(video => video.pause());
 			audios.forEach(audio => audio.pause());
 		},
