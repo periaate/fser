@@ -11,7 +11,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatalln(errors.New("missing path pathfser <path>"))
+		log.Fatalln(errors.New("missing path: fser <path>"))
 	}
 
 	mux := http.NewServeMux()
