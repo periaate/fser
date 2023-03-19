@@ -1,47 +1,42 @@
 package main
 
 import (
-	"io"
+	"encoding/json"
+	"errors"
+	"io/fs"
+	"log"
 	"net/http"
 	"os"
-
-	"github.com/periaate/ftree"
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		panic("No path specified")
+		log.Fatalln(errors.New("missing path pathfser <path>"))
 	}
-	p := os.Args[1]
-	ft := ftree.FileTree{p}
-	wk := ftree.NewWalker(ft)
-	wk.AddStepper(Stepper)
-}
 
-type Server struct {
-	// ...
-}
+	mux := http.NewServeMux()
+	fileList := []string{}
 
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// ...
-}
+	vfs := os.DirFS(os.Args[1])
+	fserfs := http.FS(vfs)
+	staticfs := http.FS(os.DirFS("static"))
 
-// Stepper is an interface used to act in place of fs.WalkDirFunc.
-// To determine if a Stepper wants to read a file, the extension of a file
-// is passed onto the want method.
-type Stepper interface {
-	// Walk is ran on each file in the FileTree.
-	Walk(e ftree.Entry, r io.Reader) error
-	// Given an extension, returns true if the Stepper wants to read the file.
-	Wants(ext string) bool
-}
+	fs.WalkDir(vfs, ".", func(path string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		fileList = append(fileList, path)
+		return nil
+	})
 
-type Sfn struct{}
+	sh := http.FileServer(staticfs)
+	mux.Handle("/", sh)
+	mux.Handle("/static/", http.StripPrefix("/static", sh))
+	mux.Handle("/fs/", http.StripPrefix("/fs", http.FileServer(fserfs)))
+	mux.HandleFunc("/list/", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(fileList)
+	})
 
-func (s *Sfn) Walk(e ftree.Entry, r io.Reader) error {
-	// ...
-}
-
-func (s *Sfn) Wants(ext string) bool {
-	return ext == ".sfn"
+	log.Println("Welcome! Fser is running on http://localhost:8080/")
+	http.ListenAndServe("localhost:8080", mux)
 }
