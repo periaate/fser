@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
@@ -14,7 +15,6 @@ func main() {
 		log.Fatalln(errors.New("missing path: fser <path>"))
 	}
 
-	mux := http.NewServeMux()
 	fileList := []string{}
 
 	vfs := os.DirFS(os.Args[1])
@@ -30,13 +30,14 @@ func main() {
 	})
 
 	sh := http.FileServer(staticfs)
-	mux.Handle("/", sh)
-	mux.Handle("/static/", http.StripPrefix("/static", sh))
-	mux.Handle("/fs/", http.StripPrefix("/fs", http.FileServer(fserfs)))
-	mux.HandleFunc("/list/", func(w http.ResponseWriter, r *http.Request) {
+	http.Handle("/", sh)
+	http.Handle("/static/", http.StripPrefix("/static", sh))
+	http.Handle("/exit/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { fmt.Println("Exiting..."); os.Exit(0) }))
+	http.Handle("/fs/", http.StripPrefix("/fs", http.FileServer(fserfs)))
+	http.HandleFunc("/list/", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(fileList)
 	})
 
-	log.Println("Welcome! Fser is running on http://localhost:8080/")
-	http.ListenAndServe("localhost:8080", mux)
+	log.Println("Welcome! Fser is running on http://:8080/")
+	http.ListenAndServe(":8080", nil)
 }
