@@ -23,15 +23,7 @@ const app = new Vue({
 		},
 		hideFs() {
 			this.showFsElement = false;
-			this.pauseAllMedia();
-		},
-		pauseAllMedia() {
-			const videos = document.querySelectorAll("video");
-			const audios = document.querySelectorAll("audio");
-
-			// Feature does not work.
-			videos.forEach(video => video.pause());
-			audios.forEach(audio => audio.pause());
+			document.getElementById("fs").pause();
 		},
 		updateItemsPerRow() {
 			localStorage.setItem("itemsPerRow", this.itemsPerRow);
@@ -41,6 +33,9 @@ const app = new Vue({
 		st() {return "style"},
 		gridWidth() {
 			return `width: calc(100% / ${this.itemsPerRow})`;
+		},
+		gridHeight() {
+			return `height: calc(100vw / ${this.itemsPerRow} + 1.5rem)`;
 		},
 
 		setupObserver() {
