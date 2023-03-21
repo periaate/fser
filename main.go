@@ -38,6 +38,6 @@ func main() {
 		json.NewEncoder(w).Encode(fileList)
 	})
 
-	log.Println("Welcome! Fser is running on http://:8080/")
-	http.ListenAndServe(":8080", nil)
+	log.Println("Welcome! Fser is running on http://localhost:8080/")
+	http.ListenAndServe("localhost:8080", nil)
 }

@@ -18,12 +18,13 @@ const app = new Vue({
 			if (/\.(mp3|ogg|wav)$/i.test(file)) return 'audio';
 		},
 		showFs(file) {
+			window.history.pushState({file:file}, 'fs', `/fs/${file}`);
 			this.selectedFile = file;
 			this.showFsElement = true;
 		},
 		hideFs() {
+			window.history.replaceState({}, 'fs', `/`);
 			this.showFsElement = false;
-			document.getElementById("fs").pause();
 		},
 		updateItemsPerRow() {
 			localStorage.setItem("itemsPerRow", this.itemsPerRow);
@@ -39,6 +40,9 @@ const app = new Vue({
 		},
 
 		setupObserver() {
+			// Very inefficient. Implement a custom solution based on scroll position,
+			// items per row, and relative index of the item in the array.
+			// This way, only a small portion need to ever be tested.
 			const options = {
 				root: null,
 				rootMargin: '100% 0px',
@@ -71,10 +75,20 @@ const app = new Vue({
 			.then(files => {this.fileList = files})
 			.then(() => this.setupObserver());
 			
-		document.addEventListener("keydown", (event) => {
-			if (event.key === "Escape") {
+		document.addEventListener("keydown", (e) => {
+			if (e.key === "Escape") {
+				this.hideFs();
+			}
+		});
+		window.addEventListener("popstate", (e) => {
+			if (e.state != null && e.state.file != null && this.showFsElement == false) {
+				e.preventDefault();
+				this.showFs(e.state.file);
+			} else if (this.showFsElement) {
+				e.preventDefault();
 				this.hideFs();
 			}
 		});
 	}
 });
+

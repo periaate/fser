@@ -23,13 +23,13 @@
 			
 			<!-- Grid container -->
 			<div class="grid-container">
-				<div class="grid-item" v-for="file in filteredFiles" @click="showFs(file)">
+				<a class="grid-item" :href="`/fs/${file}`" v-for="file in filteredFiles" @click="showFs(file)" onclick="((e) => e.preventDefault())(event)">
 					<component :is="getElementType(file)" v-bind:data-src="`/fs/${file}`"></component>
-				</div>				
+				</a>				
 			</div>
 
 			<!-- Fullscreen container -->
-			<div v-if="showFsElement" class="fs-container" @click="hideFs">
+			<div id="fs" v-if="showFsElement" class="fs-container" @click="hideFs">
 				<component :is="getElementType(selectedFile)" controls autoplay loop :src="`/fs/${selectedFile}`"></component>
 			</div>
 
